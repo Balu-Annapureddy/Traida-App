@@ -1,21 +1,12 @@
-import Database from 'better-sqlite3';
-import path from 'path';
-
-// TRAIDA - Phase 0: Database Setup
-// Using a local SQLite file for MVP (Phase 1-3)
+const Database = require('better-sqlite3');
+const path = require('path');
 
 const dbPath = path.join(process.cwd(), 'traida.db');
+const db = new Database(dbPath);
 
-export const db = new Database(dbPath, {
-  //   verbose: console.log 
-});
-
-// Enforce WAL mode for better concurrency
 db.pragma('journal_mode = WAL');
 
-// Initialize Schema
-export function initDB() {
-  const initScript = `
+const initScript = `
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
@@ -60,20 +51,12 @@ export function initDB() {
       FOREIGN KEY(room_id) REFERENCES challenges(id),
       FOREIGN KEY(user_id) REFERENCES users(id)
     );
-  `;
+`;
 
-  db.exec(initScript);
-  console.log('Database Initialized: traida.db');
+try {
+    db.exec(initScript);
+    console.log('Database Initialized Successfully (Standalone Script)');
+} catch (error) {
+    console.error('Failed to init DB:', error);
+    process.exit(1);
 }
-
-// Auto-initialize on import is causing locks during parallel build
-// Run 'npm run db:init' to setup tables
-// try {
-//    const stmt = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='users'");
-//    const table = stmt.get();
-//    if (!table) {
-//        initDB();
-//    }
-// } catch (err) {
-//     console.error("DB Init Error:", err);
-// }
