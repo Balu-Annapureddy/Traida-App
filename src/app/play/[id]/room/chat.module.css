@@ -1,0 +1,92 @@
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-sm);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    background: var(--card-bg);
+}
+
+.title {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.status {
+    font-size: 0.7rem;
+    color: var(--success);
+    font-family: var(--font-display);
+}
+
+.chatWindow {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    background: #000;
+}
+
+.message {
+    padding: 8px;
+    border-left: 2px solid #333;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.me {
+    border-left: 2px solid var(--primary);
+    background: rgba(0, 255, 157, 0.05);
+    align-self: flex-end;
+    width: 80%;
+}
+
+.msgHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-size: 0.7rem;
+    font-family: var(--font-display);
+}
+
+.msgUser {
+    color: var(--secondary);
+}
+
+.msgTime {
+    color: #555;
+}
+
+.msgContent {
+    font-size: 0.9rem;
+    word-break: break-word;
+}
+
+.inputArea {
+    margin-top: var(--spacing-sm);
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.input {
+    flex: 1;
+    background: #111;
+    color: #fff;
+    padding: 10px;
+    font-family: var(--font-body);
+    outline: none;
+    border: 2px solid #333;
+}
+
+.input:focus {
+    border-color: var(--primary);
+}

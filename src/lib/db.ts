@@ -27,38 +27,38 @@ export function initDB() {
       archetype_id TEXT,
       current_streak INTEGER DEFAULT 0,
       last_played_date TEXT,
+      role TEXT DEFAULT 'USER', -- NEW Phase 2A
+      status TEXT DEFAULT 'ACTIVE', -- NEW Phase 2A
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
-    CREATE TABLE IF NOT EXISTS challenges (
+    -- ... challenges ...
+
+    -- ... attempts ...
+
+    -- ... messages ...
+
+    CREATE TABLE IF NOT EXISTS reports (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      date_active TEXT UNIQUE NOT NULL, -- YYYY-MM-DD
-      type TEXT NOT NULL,
-      difficulty TEXT DEFAULT 'normal',
-      content_json TEXT NOT NULL,
-      solution TEXT NOT NULL
+      reporter_id INTEGER NOT NULL,
+      reported_user_id INTEGER,
+      message_id INTEGER,
+      reason TEXT NOT NULL,
+      status TEXT DEFAULT 'PENDING',
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(reporter_id) REFERENCES users(id),
+      FOREIGN KEY(reported_user_id) REFERENCES users(id),
+      FOREIGN KEY(message_id) REFERENCES messages(id)
     );
 
-    CREATE TABLE IF NOT EXISTS attempts (
+    CREATE TABLE IF NOT EXISTS audit_logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      challenge_id INTEGER NOT NULL,
-      score INTEGER,
-      time_taken_ms INTEGER,
-      is_success BOOLEAN,
+      admin_id INTEGER NOT NULL,
+      action TEXT NOT NULL,
+      target_id INTEGER,
+      details TEXT,
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(user_id) REFERENCES users(id),
-      FOREIGN KEY(challenge_id) REFERENCES challenges(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      room_id INTEGER NOT NULL,
-      user_id INTEGER NOT NULL,
-      content TEXT NOT NULL,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(room_id) REFERENCES challenges(id),
-      FOREIGN KEY(user_id) REFERENCES users(id)
+      FOREIGN KEY(admin_id) REFERENCES users(id)
     );
   `;
 

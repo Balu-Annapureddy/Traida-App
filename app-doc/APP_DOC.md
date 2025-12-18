@@ -161,7 +161,23 @@
 - **Clubs**: Approve/reject, Suspend, Transfer ownership
 - **Moderation**: Delete messages, Shadow mute, Review reports
 - **System**: Maintenance mode, Feature toggles, Audit logs, Analytics dashboard
-- **Limitation**: Admins cannot modify rankings or traits arbitrarily
+
+### Admin Power Boundaries
+- **Admins CAN**:
+    - Mute / ban users
+    - Resolve reports
+    - View stats
+    - View audit logs
+- **Admins CANNOT**:
+    - Modify scores
+    - Modify traits
+    - Enter private rooms invisibly
+    - See friend lists
+
+### User Moderation States
+- **ACTIVE**: Normal access.
+- **MUTED**: Chat blocked, can still play challenges.
+- **BANNED**: Login blocked.
 
 ## 13. TECH STACK (SAFE & LOW-RISK)
 ### Frontend
@@ -201,14 +217,17 @@
 - Rooms & chat
 - Profile & personality card
 
-### Phase 2 — Stability & Safety
-- Moderation, Reporting, Rate limiting, Admin dashboard
+### Phase 2A — Stability, Safety & Governance
+- **Reports**: User reporting system.
+- **Moderation**: Simple profanity filter (No AI, static list), User states (ACTIVE, MUTED, BANNED).
+- **Admin Dashboard**: Stats, Audit logs, User management.
+- **Rate Limiting**: In-memory limiter (Non-distributed, acceptable for MVP).
 
-### Phase 3 — Social Depth
-- Amigos, DMs, Club system
+### Phase 2B — Social Foundations
+- Amigo system, Friend requests, Private rooms.
 
-### Phase 4 — Economy & Cosmetics
-- Emojis, Avatars, Card customization
+### Phase 2C — Economy Foundations
+- Coins, Emoji unlocks, Streak shields.
 
 ### Phase 5 — Insights
 - Weekly/monthly reports, Personality evolution

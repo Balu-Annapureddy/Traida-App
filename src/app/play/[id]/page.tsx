@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import PlayInterface from "./interface"; // Client Component
 
 // Server Component Wrapper
@@ -27,7 +28,9 @@ export default async function PlayPage(props: { params: Promise<{ id: string }> 
                 <p style={{ marginTop: '2rem' }}>SCORE: {attempt.score}</p>
                 <div style={{ marginTop: '2rem' }}>
                     <a href="/" className="pixel-btn">RETURN_TO_BASE</a>
-                    {/* Link to Chat Room later */}
+                    <Link href={`/play/${id}/room`} className="pixel-btn" style={{ marginLeft: '1rem', background: 'var(--secondary)', color: 'white' }}>
+                        ENTER_ROOM
+                    </Link>
                 </div>
             </div>
         )
