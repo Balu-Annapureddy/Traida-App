@@ -7,12 +7,13 @@ import styles from "./shop.module.css";
 // Replicating Server Items for MVP Display
 const SHOP_ITEMS = [
     { id: 'THEME_MATRIX', name: 'The Matrix Theme', cost: 500, type: 'AVATAR', rarity: 'PREMIUM', locked: false },
+    { id: 'STREAK_SHIELD', name: 'Streak Shield', cost: 200, type: 'ITEM', rarity: 'COMMON', locked: false },
     { id: 'EMOJI_PACK_PREMIUM', name: 'Premium Emojis', cost: 1000, type: 'EMOJI', rarity: 'PREMIUM', locked: true }, // Example locked item
 ];
 
 export default function ShopInterface() {
     const [balance, setBalance] = useState({ coins: 0, spCoins: 0 });
-    const [inventory, setInventory] = useState<string[]>([]);
+    const [inventory, setInventory] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -25,7 +26,12 @@ export default function ShopInterface() {
             const data = await res.json();
             if (data.balance) {
                 setBalance(data.balance);
-                setInventory(data.inventory.map((i: any) => i.item_id));
+                // Convert inventory list to Map: itemId -> quantity
+                const invMap: Record<string, number> = {};
+                data.inventory.forEach((i: any) => {
+                    invMap[i.item_id] = i.quantity || 1;
+                });
+                setInventory(invMap);
             }
             setLoading(false);
         } catch (e) {
@@ -69,12 +75,9 @@ export default function ShopInterface() {
 
             <div className={styles.grid}>
                 {SHOP_ITEMS.map(item => {
-                    const owned = inventory.includes(item.id);
-                    // For MVP, locked items are just 'Coming Soon' if explicitly locked logic existed, 
-                    // but here we used a flag. Let's strictly follow the 'locked items show Coming Soon' rule 
-                    // if they are not actually buyable or just placeholders.
-                    // For this demo, let's treat the 'Premium Emojis' as effectively 'Sold Out' or 'Locked' via UI to demonstrate.
-
+                    const ownedQty = inventory[item.id] || 0;
+                    const owned = ownedQty > 0;
+                    const isStackable = item.id === 'STREAK_SHIELD';
                     const isLocked = item.locked;
 
                     return (
@@ -85,14 +88,17 @@ export default function ShopInterface() {
                             <h3>{item.name}</h3>
                             <p className={styles.rarity}>{item.rarity}</p>
 
-                            {owned ? (
+                            {owned && !isStackable ? (
                                 <div className={styles.status}>OWNED</div>
                             ) : isLocked ? (
-                                <div className={styles.cost} style={{ color: '#666' }}>COMING_SOON</div> // "Locked items show Coming Soon"
+                                <div className={styles.cost} style={{ color: '#666' }}>COMING_SOON</div>
                             ) : (
-                                <button className="pixel-btn" onClick={() => buy(item.id)}>
-                                    BUY ({item.cost})
-                                </button>
+                                <div className={styles.actions}>
+                                    {owned && isStackable && <div className={styles.qty}>OWNED: x{ownedQty}</div>}
+                                    <button className="pixel-btn" onClick={() => buy(item.id)}>
+                                        BUY ({item.cost})
+                                    </button>
+                                </div>
                             )}
                         </div>
                     );

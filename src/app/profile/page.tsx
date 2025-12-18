@@ -31,17 +31,21 @@ function calculateArchetype(traits: any) {
     return map[maxKey] || maxKey;
 }
 
+import ProfileHeader from "./ProfileHeader";
+
+// ... keep imports ...
+
 export default async function ProfilePage() {
     const session = await getSession();
     if (!session) redirect('/login');
 
-    const user = db.prepare('SELECT username, coins, sp_coins, traits_json, created_at FROM users WHERE id = ?').get(session.user.id) as any;
+    const user = db.prepare('SELECT id, username, coins, sp_coins, traits_json, archetype_id, created_at FROM users WHERE id = ?').get(session.user.id) as any;
 
     if (!user) redirect('/login');
 
     const traits = JSON.parse(user.traits_json || '{}');
-    const archetype = calculateArchetype(traits);
-    const joinedDate = new Date(user.created_at).toLocaleDateString();
+    // const archetype = calculateArchetype(traits); // Logic moved inside header or just passed raw? 
+    // ProfileHeader uses user object directly.
 
     // Default traits list for visualization
     const traitKeys = ['LOGIC', 'SPEED', 'ETHICS', 'PATTERN'];
@@ -54,27 +58,11 @@ export default async function ProfilePage() {
             </div>
 
             <div className={`pixel-border ${styles.card}`}>
-                <div className={styles.avatarSection}>
-                    <div className={styles.avatarPlaceholder}>
-                        {user.username.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div className={styles.userInfo}>
-                        <h2 className={styles.username}>{user.username}</h2>
-                        <div className={styles.archetype}>ARCHETYPE: {archetype}</div>
-                        <div className={styles.meta}>JOINED: {joinedDate}</div>
-                    </div>
-                </div>
+                <ProfileHeader user={user} />
 
-                <div className={styles.statsGrid}>
-                    <div className={styles.statBox}>
-                        <label>COINS</label>
-                        <span>{user.coins}</span>
-                    </div>
-                    <div className={styles.statBox}>
-                        <label>SP_COINS</label>
-                        <span style={{ color: 'var(--accent)' }}>{user.sp_coins}</span>
-                    </div>
-                </div>
+                {/* Stats Grid removed (moved to Header) or kept? 
+                    ProfileHeader includes stats. So we remove statsGrid here.
+                */}
 
                 <div className={styles.traitsSection}>
                     <h3>EVALUATED_TRAITS</h3>

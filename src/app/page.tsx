@@ -78,6 +78,14 @@ export default async function Home() {
             STATUS: {session ? (hasAttemptedToday ? 'COMPLETED' : 'AWAITING_INPUT') : 'LOCKED'}
           </p>
 
+          {session && (
+            <div style={{ marginBottom: '2rem' }}>
+              <Link href="/liber" className="pixel-btn" style={{ borderStyle: 'dashed', opacity: 0.8 }}>
+                ENTER_PRACTICE_MODE
+              </Link>
+            </div>
+          )}
+
           {session ? (
             <div style={{ display: 'grid', gap: '1rem', marginTop: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
               {challenges.length > 0 ? challenges.map((c) => {

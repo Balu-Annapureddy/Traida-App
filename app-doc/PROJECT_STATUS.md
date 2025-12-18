@@ -1,6 +1,6 @@
 # TRAIDA Project Status
 **Last Updated**: 2025-12-18
-**Current Version**: Phase 2C Complete (Economy Foundations)
+**Current Version**: Phase 3 Complete (Mobile Polish & Retention)
 
 ## 📍 Where We Are
 We have successfully implemented:
@@ -8,18 +8,19 @@ We have successfully implemented:
 2.  **Phase 2A (Governance)**: Moderation & Admin.
 3.  **Phase 2B (Social)**: Friends & Private DMs.
 4.  **Phase 2C (Economy)**: Wallet, Transactions, Inventory, Shop (Demo).
+5.  **Phase 3 (Retention)**: Liber (Practice), Streak Shields, Username Change, Mobile Polish.
 
-### ✅ Economy Features (Refined)
-- **Virtual Shop (`/shop`)**: Functional for demo purposes (Matrix Theme). Full rollout deferred.
-- **Wallet API**: `GET /api/wallet`.
-- **Transactions**: Immutable ledger in DB.
-- **Philosophy**: No Pay-to-Win, No Real Money. Items are Premium (bought) or Rare (earned).
+### ✅ Phase 3 Features (Retention)
+- **Liber (`/liber`)**: Low-stress practice mode.
+- **Streak Shields**: Auto-protection for missed days.
+- **Identity**: Username change via SP Coins.
+- **Mobile Polish**: 48px touch targets, `100dvh`.
 
 ## ⏭ Next Steps (Context for Resume)
-**Phase 3: Scale & Polish (Mobile Focus)**.
-- Improve Mobile Layout / Touch Targets.
-- Refine CSS and Pixel UI consistency.
-- Perf check.
+**Phase 4: Communities (Clubs)**.
+- Create Clubs/Groups.
+- Club Chat Rooms.
+- Club Challenges.
 
 ## 📝 Credentials & Secrets
 - **Admin**: `sysadmin` / `secure_admin_password_123`

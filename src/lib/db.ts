@@ -29,6 +29,7 @@ export function initDB() {
       last_played_date TEXT,
       role TEXT DEFAULT 'USER', -- NEW Phase 2A
       status TEXT DEFAULT 'ACTIVE', -- NEW Phase 2A
+      last_username_change DATETIME, -- NEW Phase 3
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -95,6 +96,7 @@ export function initDB() {
       item_id TEXT NOT NULL,
       item_type TEXT NOT NULL,
       rarity TEXT DEFAULT 'COMMON',
+      quantity INTEGER DEFAULT 1, -- NEW Phase 3
       acquired_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(user_id) REFERENCES users(id)
     );

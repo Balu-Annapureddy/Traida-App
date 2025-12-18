@@ -229,14 +229,59 @@
 ### Phase 2C — Economy Foundations
 - Coins, Emoji unlocks, Streak shields.
 
+### Phase 3 — Mobile Polish & Retention (Refined)
+**Goal**: Improve retention and comfort. No new competitive mechanics.
+
+#### 1. Liber (Practice Mode)
+- **Route**: `/liber`
+- **Logic**: Unlimited random challenges. No score/trait updates. No history saved.
+- **UI**: "Practice Mode" label. Infinite loop.
+
+#### 2. Streak Shields
+- **Concept**: Consumable protection for missed days.
+- **Mechanism**: Stored in Inventory. Auto-consumed on missed day check.
+- **Acquisition**: Earned via milestones or bought (Coins).
+
+#### 3. Username Change
+- **Cost**: 1 SP Coin.
+- **Logic**: Validates uniqueness. Logs transaction.
+
+#### 4. Mobile Polish
+- **Viewport**: `100dvh` layout.
+- **Interactions**: 48px+ touch targets.
+- **Performance**: Reduced reflows.
+
+### Phase 4 — Communities (Clubs)
+**Goal**: Interest-based, non-competitive social groups.
+**Philosophy**: No leaderboards, no scores, no "Top Clubs". Semi-anonymous.
+
+#### 1. Club Identity (Rules)
+- **Size**: Max 30 Members.
+- **Limit**: Max 2 Clubs per user.
+- **Entry**:
+    - **Public**: Join directly (No approval).
+    - **Private**: Invite-only (No requests).
+- **Lifetime**: Persistent until deleted by Creator.
+
+#### 2. Roles & Permissions
+- **Creator**: Delete Club (Irreversible, wipes data), Promote/Demote Mods.
+- **Moderator**: Invite, Remove Members, Announcements.
+- **Member**: Chat, Leave.
+
+#### 3. Creation & Safety
+- **Cost**: 5 SP Coins.
+- **Approval**: Admin approval required (SP held, refunded if rejected).
+- **Rate Limit**: Max 1 pending request.
+
+#### 4. Club Chat
+- **Scope**: Persistent, separate from Global.
+- **Limits**: Same rate limits as Global Chat.
+- **Restrictions**: No Media, No Voice, No External Links.
+- **Moderation**: Standard Report system applies.
+
+
 ### Phase 5 — Insights
-- Weekly/monthly reports, Personality evolution
-
-### Phase 6 — Scale & Polish
-- DB migration, Performance, PWA support
-
-### Phase 7 — Monetization (Locked)
-- Premium features (UI only), Payments marked “Coming Soon”
+- Future expansion.
 
 ## 15. GOVERNANCE RULE
 - This document is the single source of truth.

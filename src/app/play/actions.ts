@@ -4,6 +4,12 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
+export async function submitPractice(challengeId: number, answer: string) {
+    const challenge = db.prepare('SELECT solution FROM challenges WHERE id = ?').get(challengeId) as any;
+    if (!challenge) return false;
+    return answer.trim().toLowerCase() === challenge.solution.trim().toLowerCase();
+}
+
 export async function submitChallenge(challengeId: number, answer: string, timeTakenMs: number) {
     const session = await getSession();
     if (!session) return { error: "Unauthorized" };
@@ -45,14 +51,74 @@ export async function submitChallenge(challengeId: number, answer: string, timeT
     // 6. Update User Traits (Placeholder Logic)
     // If LOGIC & Success -> Logic + 1
     if (isSuccess) {
-        // Fetch current traits
-        const user = db.prepare('SELECT traits_json FROM users WHERE id = ?').get(userId) as any;
+        // Fetch current traits and streak data
+        const user = db.prepare('SELECT traits_json, current_streak, last_played_date FROM users WHERE id = ?').get(userId) as any;
         const traits = JSON.parse(user.traits_json || '{}');
 
-        const typeKey = challenge.type.toUpperCase(); // LOGIC, PATTERN, etc
-        traits[typeKey] = (traits[typeKey] || 0) + 1; // Increment trait
+        // Update Traits
+        const typeKey = challenge.type.toUpperCase();
+        traits[typeKey] = (traits[typeKey] || 0) + 1;
 
-        db.prepare('UPDATE users SET traits_json = ? WHERE id = ?').run(JSON.stringify(traits), userId);
+        // Update Streak
+        let streak = user.current_streak || 0;
+        const lastDate = user.last_played_date ? new Date(user.last_played_date) : null;
+        const today = new Date();
+        // Use local or UTC? App seems to use simplified ISO string for now.
+        // To be safe, let's just count full days steps.
+
+        // Strip time for accurate day stats (UTC 00:00)
+        const getDayTime = (d: Date) => Math.floor(d.getTime() / 86400000);
+
+        const todayTime = getDayTime(today);
+        const lastTime = lastDate ? getDayTime(lastDate) : null;
+        const todayStr = today.toISOString().split('T')[0];
+
+        if (lastTime !== null) {
+            const diffDays = todayTime - lastTime;
+
+            if (diffDays === 0) {
+                // Same day, do nothing
+            } else if (diffDays === 1) {
+                // Consecutive day
+                streak += 1;
+            } else {
+                // Missed diffDays - 1 days
+                // e.g. Mon(1) -> Wed(3). Missed Tue. diff=2. missed=1.
+                const missedDays = diffDays - 1;
+
+                // Check Shields
+                const shielding = db.prepare("SELECT id, quantity FROM inventory WHERE user_id = ? AND item_id = 'STREAK_SHIELD'").get(userId) as any;
+                const ownedShields = shielding ? shielding.quantity : 0;
+
+                console.log(`Debug Streak: Missed ${missedDays}, Owned ${ownedShields}`);
+
+                if (ownedShields >= missedDays) {
+                    // Consumed enough shields
+                    streak += 1; // Count today as success, bridge the gap
+                    const newQty = ownedShields - missedDays;
+
+                    if (newQty <= 0) {
+                        db.prepare("DELETE FROM inventory WHERE id = ?").run(shielding.id);
+                    } else {
+                        db.prepare("UPDATE inventory SET quantity = ? WHERE id = ?").run(newQty, shielding.id);
+                    }
+
+                    // Log usage
+                    db.prepare(`
+                        INSERT INTO transactions (user_id, type, amount, currency, description) 
+                        VALUES (?, 'USE_SHIELD', 0, 'ITEM', ?)
+                    `).run(userId, `Used ${missedDays} Streak Shields`);
+
+                } else {
+                    streak = 1; // Reset unfortunately
+                }
+            }
+        } else {
+            streak = 1; // First game
+        }
+
+        db.prepare('UPDATE users SET traits_json = ?, current_streak = ?, last_played_date = ? WHERE id = ?')
+            .run(JSON.stringify(traits), streak, todayStr, userId);
     }
 
     revalidatePath('/'); // Update dashboard

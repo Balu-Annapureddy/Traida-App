@@ -35,7 +35,7 @@ export const Economy = {
         transact();
     },
 
-    addToInventory: (userId: number, itemId: string, itemType: 'EMOJI' | 'AVATAR', rarity: string = 'COMMON') => {
+    addToInventory: (userId: number, itemId: string, itemType: 'EMOJI' | 'AVATAR' | 'ITEM', rarity: string = 'COMMON') => {
         db.prepare(`
             INSERT INTO inventory (user_id, item_id, item_type, rarity)
             VALUES (?, ?, ?, ?)

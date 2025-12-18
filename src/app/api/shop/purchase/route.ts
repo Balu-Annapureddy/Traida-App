@@ -3,9 +3,10 @@ import { db } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { Economy } from '@/lib/economy';
 
-const SHOP_ITEMS: Record<string, { cost: number, currency: 'COIN' | 'SP_COIN', type: 'EMOJI' | 'AVATAR', rarity: string }> = {
+const SHOP_ITEMS: Record<string, { cost: number, currency: 'COIN' | 'SP_COIN', type: 'EMOJI' | 'AVATAR' | 'ITEM', rarity: string }> = {
     'THEME_MATRIX': { cost: 500, currency: 'COIN', type: 'AVATAR', rarity: 'PREMIUM' }, // Demo item
     'EMOJI_PACK_PREMIUM': { cost: 1000, currency: 'COIN', type: 'EMOJI', rarity: 'PREMIUM' },
+    'STREAK_SHIELD': { cost: 200, currency: 'COIN', type: 'ITEM', rarity: 'COMMON' },
 };
 
 export async function POST(req: NextRequest) {
@@ -18,8 +19,12 @@ export async function POST(req: NextRequest) {
     if (!item) return NextResponse.json({ error: 'ITEM_NOT_FOUND' }, { status: 404 });
 
     // Check if already owned
-    const owned = db.prepare('SELECT id FROM inventory WHERE user_id = ? AND item_id = ?').get(session.user.id, itemId);
-    if (owned) return NextResponse.json({ error: 'ALREADY_OWNED' }, { status: 400 });
+    const owned = db.prepare('SELECT id, quantity FROM inventory WHERE user_id = ? AND item_id = ?').get(session.user.id, itemId) as any;
+
+    // Stackable items logic
+    const isStackable = itemId === 'STREAK_SHIELD';
+
+    if (owned && !isStackable) return NextResponse.json({ error: 'ALREADY_OWNED' }, { status: 400 });
 
     try {
         Economy.transact(
@@ -30,12 +35,16 @@ export async function POST(req: NextRequest) {
             `Purchased ${itemId}`
         );
 
-        Economy.addToInventory(
-            session.user.id,
-            itemId,
-            item.type,
-            item.rarity
-        );
+        if (owned && isStackable) {
+            db.prepare('UPDATE inventory SET quantity = quantity + 1 WHERE id = ?').run(owned.id);
+        } else {
+            Economy.addToInventory(
+                session.user.id,
+                itemId,
+                item.type,
+                item.rarity
+            );
+        }
 
         return NextResponse.json({ success: true });
 
