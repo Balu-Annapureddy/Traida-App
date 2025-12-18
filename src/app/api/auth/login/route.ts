@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { comparePassword, createSession } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
     try {
@@ -10,7 +11,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
         }
 
-        const { checkRateLimit } = require('@/lib/rate-limit');
         // Use username or IP as identifier. For MVP, username is safer for logic, but IP is better for security. 
         // Next.js request IP is tricky in dev. Let's use username for now as it's passed in body.
         if (!checkRateLimit('LOGIN', username)) {

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSession } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { scrubText } from '@/lib/moderation';
 
 export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -41,7 +43,6 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         return NextResponse.json({ error: 'Empty message' }, { status: 400 });
     }
 
-    const { checkRateLimit } = require('@/lib/rate-limit');
     if (!checkRateLimit('CHAT', session.user.id.toString())) {
         return NextResponse.json({ error: 'RATE_LIMIT_EXCEEDED' }, { status: 429 });
     }
@@ -60,7 +61,6 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     }
 
     // Phase 2A: Profanity Filter
-    const { scrubText } = require('@/lib/moderation'); // Dynamic require for simplicity in API route
     const cleanContent = scrubText(content.trim().substring(0, 500));
 
     // Insert message

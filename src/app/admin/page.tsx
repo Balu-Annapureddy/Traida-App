@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import AdminDashboard from "./dashboard"; // Client Component
+import AdminDashboard from "./Dashboard"; // Client Component
 
 export default async function AdminPage() {
     const session = await getSession();
