@@ -54,9 +54,9 @@ export default async function Home() {
         <div>
           {session ? (
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <span className="pixel-border" style={{ padding: '5px 10px', fontSize: '0.8rem' }}>
+              <Link href="/profile" className="pixel-border" style={{ padding: '5px 10px', fontSize: '0.8rem', cursor: 'pointer', color: 'inherit' }}>
                 USER: {session.user.username}
-              </span>
+              </Link>
               <a href="/api/auth/logout" className="pixel-btn" style={{ fontSize: '0.8rem', padding: '5px 10px' }}>
                 LOGOUT
               </a>

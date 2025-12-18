@@ -1,0 +1,119 @@
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    background: var(--card-bg);
+}
+
+.card {
+    padding: var(--spacing-lg);
+    background: var(--card-bg);
+}
+
+.avatarSection {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    align-items: center;
+}
+
+.avatarPlaceholder {
+    width: 80px;
+    height: 80px;
+    background: var(--secondary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-family: var(--font-display);
+    border: 2px solid #fff;
+    box-shadow: 4px 4px 0 0 #fff;
+}
+
+.userInfo {
+    flex: 1;
+}
+
+.username {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.archetype {
+    font-family: var(--font-display);
+    color: var(--foreground);
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+}
+
+.meta {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.statBox {
+    border: 2px solid #333;
+    padding: var(--spacing-sm);
+    text-align: center;
+}
+
+.statBox label {
+    display: block;
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.statBox span {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: #fff;
+}
+
+.traitsSection {
+    margin-top: var(--spacing-lg);
+    border-top: 2px dashed #333;
+    padding-top: var(--spacing-md);
+}
+
+.traitRow {
+    margin-bottom: var(--spacing-sm);
+}
+
+.traitLabel {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+    font-family: var(--font-display);
+}
+
+.barContainer {
+    height: 10px;
+    background: #222;
+    border: 1px solid #444;
+    position: relative;
+}
+
+.barFill {
+    height: 100%;
+    background: var(--primary);
+    box-shadow: 0 0 10px var(--primary-glow);
+}
