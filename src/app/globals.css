@@ -1,0 +1,97 @@
+:root {
+  /* TRAIDA Retro Theme */
+  --font-body: 'Inter', sans-serif;
+  --font-display: 'Courier New', monospace; /* Fallback until pixel font loaded */
+
+  /* Colors */
+  --background: #050505;
+  --foreground: #e0e0e0;
+  
+  --primary: #00ff9d; /* Molecular Green */
+  --primary-glow: rgba(0, 255, 157, 0.4);
+  
+  --secondary: #ff00ff; /* Retro Magenta */
+  --accent: #ffff00; /* CRT Yellow */
+  
+  --card-bg: #111111;
+  --card-border: #333333;
+  
+  --error: #ff3333;
+  --success: #33ff33;
+
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  
+  /* Borders */
+  --border-width: 2px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  color: var(--primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+a:hover {
+  border-bottom-color: var(--primary);
+}
+
+/* Utilities */
+.pixel-border {
+  border: var(--border-width) solid var(--card-border);
+  box-shadow: 4px 4px 0px 0px var(--card-border);
+  position: relative;
+  background: var(--card-bg);
+}
+
+.pixel-btn {
+  background: var(--primary);
+  color: #000;
+  border: 2px solid #fff;
+  padding: 10px 20px;
+  font-family: var(--font-display);
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 0 #fff;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.pixel-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 0 #fff;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+}
