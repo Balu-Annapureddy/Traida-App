@@ -1,0 +1,46 @@
+import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import PlayInterface from "./interface"; // Client Component
+
+// Server Component Wrapper
+export default async function PlayPage(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
+    const session = await getSession();
+    if (!session) redirect('/login');
+
+    const id = parseInt(params.id);
+
+    // Check if valid challenge
+    const challenge = db.prepare('SELECT id, type, difficulty, content_json FROM challenges WHERE id = ?').get(id) as any;
+    if (!challenge) return <div>INVALID_CHALLENGE_ID</div>;
+
+    // Check if already attempted
+    const attempt = db.prepare('SELECT id, score, is_success FROM attempts WHERE user_id = ? AND challenge_id = ?').get(session.user.id, id) as any;
+
+    if (attempt) {
+        return (
+            <div className="container" style={{ textAlign: 'center', marginTop: '5rem' }}>
+                <h1 className="pixel-border" style={{ padding: '1rem', color: attempt.is_success ? 'var(--success)' : 'var(--error)' }}>
+                    {attempt.is_success ? 'MISSION_SUCCESS' : 'MISSION_FAILED'}
+                </h1>
+                <p style={{ marginTop: '2rem' }}>SCORE: {attempt.score}</p>
+                <div style={{ marginTop: '2rem' }}>
+                    <a href="/" className="pixel-btn">RETURN_TO_BASE</a>
+                    {/* Link to Chat Room later */}
+                </div>
+            </div>
+        )
+    }
+
+    // Parse JSON content
+    const content = JSON.parse(challenge.content_json);
+
+    return (
+        <PlayInterface
+            challengeId={id}
+            type={challenge.type}
+            content={content}
+        />
+    );
+}
