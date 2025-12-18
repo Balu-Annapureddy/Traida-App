@@ -223,65 +223,64 @@
 - **Admin Dashboard**: Stats, Audit logs, User management.
 - **Rate Limiting**: In-memory limiter (Non-distributed, acceptable for MVP).
 
-### Phase 2B — Social Foundations
-- Amigo system, Friend requests, Private rooms.
+### Phase Group A — Social & Retention (LOCKED)
+**Goal**: Implement non-competitive social layers.
+**Constraints**: Mobile-first, No leaderboards, Semi-anonymous.
 
-### Phase 2C — Economy Foundations
-- Coins, Emoji unlocks, Streak shields.
+#### A1. Amigos (Friends)
+- **Concept**: Private friend list. Mutual consent required.
+- **Actions**: Request, Accept, Reject, Block, Unfriend.
+- **Privacy**: No "Friends of Friends" visibility.
+- **Limit**: Max 50 Amigos (Start small).
+- **Blocking**: Immediately removes DM access, hides from search, prevents future interactions. No notifications.
 
-### Phase 3 — Mobile Polish & Retention (Refined)
-**Goal**: Improve retention and comfort. No new competitive mechanics.
+#### A2. Private Rooms (DM)
+- **Scope**: Direct 1-on-1 chat with Amigos.
+- **Retention**: Persistent but expirable (e.g., 30 days or 50 messages - TBD, keep simple for MVP).
+- **Security**: Reportable messages. No media/links.
+- **Control**: Soft-disabled if Amigo status changes from ACCEPTED.
+- **Non-Goals**: No read receipts, typing indicators, online presence, or reactions.
 
-#### 1. Liber (Practice Mode)
-- **Route**: `/liber`
-- **Logic**: Unlimited random challenges. No score/trait updates. No history saved.
-- **UI**: "Practice Mode" label. Infinite loop.
+#### A3. Notifications (Pulse)
+- **Philosophy**: "Important interactions only". No engagement spam.
+- **Triggers**:
+    - [Social] New Amigo Request
+    - [Social] New DM (Badge only)
+    - [Club] Club Invite
+    - [System] Admin/Club Action (Warning/Grant/Kick/Promote)
+- **UI**: Simple "Bell" icon with red dot. List of last 20 events.
+- **Expiration**: Auto-pruned > 30 days.
 
-#### 2. Streak Shields
-- **Concept**: Consumable protection for missed days.
-- **Mechanism**: Stored in Inventory. Auto-consumed on missed day check.
-- **Acquisition**: Earned via milestones or bought (Coins).
+#### A4. Club Governance (Moderation UI)
+- **Roles**:
+    - **Creator**: Promote to Mod, Kick Member.
+    - **Mod**: Kick Member, Invite Amigo.
+- **UI**: Member list with "..." menu per user.
+- **Invite Flow**: Select from Amigo list -> Send Notification.
 
-#### 3. Username Change
-- **Cost**: 1 SP Coin.
-- **Logic**: Validates uniqueness. Logs transaction.
+### Phase Group B — Insights & Reflection (LOCKED)
+**Goal**: Foster self-awareness through calm, descriptive feedback. "Mirror, not Scoreboard."
+**Constraints**: Private, Pull-only, Non-evaluative.
 
-#### 4. Mobile Polish
-- **Viewport**: `100dvh` layout.
-- **Interactions**: 48px+ touch targets.
-- **Performance**: Reduced reflows.
+#### B1. Weekly Reflection (The "Sunday Letter")
+- **Concept**: Generated text summary of patterns (Focus, Rhythm, Growth).
+- **Tone**: Observational, warm, non-judgmental.
+- **Delivery**: **Pull-only**. No push notifications.
 
-### Phase 4 — Communities (Clubs)
-**Goal**: Interest-based, non-competitive social groups.
-**Philosophy**: No leaderboards, no scores, no "Top Clubs". Semi-anonymous.
+#### B2. Trait Compass (Visual Identity)
+- **Concept**: Dynamic abstract shape representing trait balance.
+- **Visuals**: Shape/Direction over numbers.
+- **Rule**: Narrative visualization only. Not canonical data.
 
-#### 1. Club Identity (Rules)
-- **Size**: Max 30 Members.
-- **Limit**: Max 2 Clubs per user.
-- **Entry**:
-    - **Public**: Join directly (No approval).
-    - **Private**: Invite-only (No requests).
-- **Lifetime**: Persistent until deleted by Creator.
+#### B3. Rhythm Log (Heatmap)
+- **Concpt**: Visualization of *when* (Time of Day) user engages.
+- **Focus**: Presence and Flow, not Streak maintenance.
 
-#### 2. Roles & Permissions
-- **Creator**: Delete Club (Irreversible, wipes data), Promote/Demote Mods.
-- **Moderator**: Invite, Remove Members, Announcements.
-- **Member**: Chat, Leave.
-
-#### 3. Creation & Safety
-- **Cost**: 5 SP Coins.
-- **Approval**: Admin approval required (SP held, refunded if rejected).
-- **Rate Limit**: Max 1 pending request.
-
-#### 4. Club Chat
-- **Scope**: Persistent, separate from Global.
-- **Limits**: Same rate limits as Global Chat.
-- **Restrictions**: No Media, No Voice, No External Links.
-- **Moderation**: Standard Report system applies.
-
-
-### Phase 5 — Insights
-- Future expansion.
+#### B4. Time Horizon Rules
+- **Daily**: ❌ No daily insight cards.
+- **Weekly**: ✅ Primary unit.
+- **Monthly**: ✅ Optional self-comparison.
+- **Yearly**: ❌ Forbidden (Prevents fixation).
 
 ## 15. GOVERNANCE RULE
 - This document is the single source of truth.

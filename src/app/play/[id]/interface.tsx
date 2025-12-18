@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { submitChallenge, submitPractice } from "../actions";
 import styles from "./play.module.css";
+import SignalCard from "@/app/components/SignalCard";
+import SessionEndScreen from "@/app/components/SessionEndScreen";
 
 interface GameInterfaceProps {
     challengeId: number;
@@ -19,6 +21,10 @@ export default function PlayInterface({ challengeId, type, content, mode = 'rank
     const [submitting, setSubmitting] = useState(false);
     const [gameStatus, setGameStatus] = useState('PLAYING'); // PLAYING, WON, LOST
     const [score, setScore] = useState(0);
+
+    // CD1/CD2 State
+    const [showSignal, setShowSignal] = useState(false);
+    const [showEnd, setShowEnd] = useState(false);
 
     useEffect(() => {
         if (gameStatus !== 'PLAYING') return;
@@ -46,12 +52,45 @@ export default function PlayInterface({ challengeId, type, content, mode = 'rank
             const isCorrect = await submitPractice(challengeId, answer);
             setGameStatus(isCorrect ? 'WON' : 'LOST');
             setSubmitting(false);
+            // In Practice, we show Signal then Closure too
+            setShowSignal(true);
             return;
         }
 
         const timeTakenMs = (300 - timeLeft) * 1000;
         await submitChallenge(challengeId, answer, timeTakenMs);
-        window.location.reload();
+        // Ranked: Reload to show result from Server Page? 
+        // Logic in Page.tsx checks for attempt.
+        // If we reload, we lose Client State (Signal Card).
+        // WE MUST NOT RELOAD if we want to show Signal Card client-side.
+        // Instead, we should handle "Success" state here, or we use a persistent "Signal Needed" check on Page.tsx.
+        // Given Phase CD requirements ("Signal appears after challenge"), 
+        // let's update local state to "COMPLETED" and show Signal, 
+        // THEN on SessionEnd -> Router Push or Reload.
+
+        // However, Page.tsx handles the "Result View". 
+        // If we want to use that view, we should reload. 
+        // But then Page.tsx needs to know to show Signal.
+        // Complexity: Page.tsx checks DB. If we assume Page.tsx logic handles "Already Attempted", 
+        // we can modify Page.tsx to also show Signal if attempt is fresh? Hard to track "fresh".
+        // EASIER: Handle result display INLINE here for the immediate post-game flow.
+        // We won't reload. We will setGameStatus('COMPLETE') and show Score/Result here.
+
+        // We need to know if we won/lost and score. `submitChallenge` returns void?
+        // Let's modify logic to wait or assuming success? 
+        // Actually, `submitChallenge` is Server Action. 
+        // We can't easily get result unless we refactor action to return it.
+        // FOR NOW: Let's assume we reload for Ranked reliability (Server logic is source of truth).
+        // BUT how to show Signal? 
+        // Option A: Cookie/Param?
+        // Option B: Query Param `?just_finished=true`.
+
+        // Let's use `window.location.href = window.location.pathname + '?signal=true'` to reload and trigger signal?
+        // Or refactor PlayPage to handle it.
+        // Let's try inline handling if possible. 
+        // IF I cannot change server action easily, I will stick to Reload + Query Param for Signal Trigger.
+
+        window.location.href = window.location.pathname + '?signal=true';
     }
 
     // ... render logic ...

@@ -3,16 +3,19 @@ import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import PlayInterface from "./interface"; // Client Component
+import ClientSignalFlow from "./ClientSignalFlow"; // Client Signal/Closure
 
 // Server Component Wrapper
-export default async function PlayPage(props: { params: Promise<{ id: string }> }) {
+export default async function PlayPage(props: { params: Promise<{ id: string }>, searchParams: Promise<{ signal?: string }> }) {
     const params = await props.params;
+    const searchParams = await props.searchParams;
     const session = await getSession();
     if (!session) redirect('/login');
 
     const id = parseInt(params.id);
+    const showSignalParam = searchParams?.signal === 'true';
 
-    // Check if valid challenge
+    // Check if challenge exists
     const challenge = db.prepare('SELECT id, type, difficulty, content_json FROM challenges WHERE id = ?').get(id) as any;
     if (!challenge) return <div>INVALID_CHALLENGE_ID</div>;
 
@@ -26,12 +29,19 @@ export default async function PlayPage(props: { params: Promise<{ id: string }> 
                     {attempt.is_success ? 'MISSION_SUCCESS' : 'MISSION_FAILED'}
                 </h1>
                 <p style={{ marginTop: '2rem' }}>SCORE: {attempt.score}</p>
-                <div style={{ marginTop: '2rem' }}>
-                    <a href="/" className="pixel-btn">RETURN_TO_BASE</a>
-                    <Link href={`/play/${id}/room`} className="pixel-btn" style={{ marginLeft: '1rem', background: 'var(--secondary)', color: 'white' }}>
-                        ENTER_ROOM
-                    </Link>
-                </div>
+
+                {showSignalParam ? (
+                    <div style={{ marginTop: '2rem' }}>
+                        <ClientSignalFlow challengeId={id} />
+                    </div>
+                ) : (
+                    <div style={{ marginTop: '2rem' }}>
+                        <a href="/" className="pixel-btn">RETURN_TO_BASE</a>
+                        <Link href={`/play/${id}/room`} className="pixel-btn" style={{ marginLeft: '1rem', background: 'var(--secondary)', color: 'white' }}>
+                            ENTER_ROOM
+                        </Link>
+                    </div>
+                )}
             </div>
         )
     }

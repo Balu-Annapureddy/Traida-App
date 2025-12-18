@@ -1,128 +1,158 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import styles from "./amigos.module.css";
+import Link from "next/link";
+// Styles assumed to exist or we use inline/global for now. Reuse clubs.module.css patterns? 
+// Ideally we create amigos.module.css.
 
 export default function AmigoHub() {
-    const [friends, setFriends] = useState<any[]>([]);
-    const [received, setReceived] = useState<any[]>([]);
-    const [sent, setSent] = useState<any[]>([]);
-    const [targetUsername, setTargetUsername] = useState("");
-    const [loading, setLoading] = useState(true);
+    const [tab, setTab] = useState<'FRIENDS' | 'REQUESTS' | 'BLOCKED'>('FRIENDS');
+    const [data, setData] = useState<{ friends: any[], incoming: any[], outgoing: any[], blocked: any[] }>({
+        friends: [], incoming: [], outgoing: [], blocked: []
+    });
+    const [search, setSearch] = useState("");
+    const [status, setStatus] = useState("");
 
     useEffect(() => {
-        fetchAmigos();
+        fetchList();
     }, []);
 
-    async function fetchAmigos() {
+    async function fetchList() {
         try {
-            const res = await fetch('/api/amigos');
-            const data = await res.json();
-            if (data.friends) {
-                setFriends(data.friends);
-                setReceived(data.pending_received);
-                setSent(data.pending_sent);
+            const res = await fetch('/api/amigos/list');
+            const json = await res.json();
+            if (json.friends) setData(json);
+        } catch (e) { console.error(e); }
+    }
+
+    async function handleRequest(e: React.FormEvent) {
+        e.preventDefault();
+        if (!search.trim()) return;
+        setStatus("SENDING...");
+
+        try {
+            const res = await fetch('/api/amigos/request', {
+                method: 'POST',
+                body: JSON.stringify({ targetUsername: search.trim() })
+            });
+            const d = await res.json();
+            if (d.success) {
+                setStatus("REQUEST_SENT");
+                setSearch("");
+                fetchList();
+            } else {
+                setStatus(`ERROR: ${d.error}`);
             }
         } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
+            setStatus("NETWORK_ERROR");
         }
     }
 
-    async function sendRequest() {
-        if (!targetUsername.trim()) return;
+    async function handleRespond(requestId: number, action: 'ACCEPT' | 'REJECT') {
         try {
-            const res = await fetch('/api/amigos', {
+            await fetch('/api/amigos/respond', {
                 method: 'POST',
-                body: JSON.stringify({ action: 'REQUEST', targetUsername })
+                body: JSON.stringify({ requestId, action })
             });
-            const data = await res.json();
-            if (data.error) alert(data.error);
-            else {
-                alert("REQUEST_TRANSMITTED");
-                setTargetUsername("");
-                fetchAmigos();
-            }
-        } catch (e) {
-            alert("TRANSMISSION_ERROR");
-        }
+            fetchList();
+        } catch (e) { alert("ACTION_FAILED"); }
     }
 
-    async function handleAction(action: string, amigoId: number) {
+    async function handleBlock(targetId: number) {
+        if (!confirm("BLOCK_USER? (This is permanent until manual unblock)")) return;
         try {
-            await fetch('/api/amigos', {
+            await fetch('/api/amigos/block', {
                 method: 'POST',
-                body: JSON.stringify({ action, amigoId })
+                body: JSON.stringify({ targetId })
             });
-            fetchAmigos();
-        } catch (e) {
-            alert("ERROR");
-        }
+            fetchList();
+        } catch (e) { alert("BLOCK_FAILED"); }
     }
-
-    if (loading) return <div>SCANNING_NETWORK...</div>;
 
     return (
         <div className={styles.container}>
-            <header className={styles.header}>
-                <h1 className={styles.title}>AMIGO_NETWORK_HUB</h1>
-                <Link href="/" className="pixel-btn">EXIT</Link>
-            </header>
-
-            <div className={`pixel-border ${styles.section}`}>
-                <h2>ADD_NEW_LINK</h2>
-                <div style={{ display: 'flex', gap: '10px' }}>
+            {/* Search / Add */}
+            <div className={`pixel-border ${styles.searchSection}`}>
+                <h3>ADD_NEW_AMIGO</h3>
+                <form onSubmit={handleRequest} style={{ display: 'flex', gap: '10px' }}>
                     <input
-                        className="pixel-border"
+                        className="pixel-input"
                         placeholder="ENTER_USERNAME"
-                        value={targetUsername}
-                        onChange={e => setTargetUsername(e.target.value)}
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
                     />
-                    <button className="pixel-btn" onClick={sendRequest}>CONNECT</button>
-                </div>
+                    <button className="pixel-btn">SEND_REQ</button>
+                </form>
+                {status && <p style={{ color: 'orange', fontSize: '0.8rem', marginTop: '5px' }}>{status}</p>}
             </div>
 
-            <div className={styles.grid}>
-                <div className={`pixel-border ${styles.column}`}>
-                    <h2>INCOMING_REQS ({received.length})</h2>
-                    {received.length === 0 && <p style={{ color: '#666' }}>NO_SIGNALS</p>}
-                    {received.map(r => (
-                        <div key={r.id} className={styles.card}>
-                            <span>{r.friendName}</span>
-                            <div className={styles.actions}>
-                                <button className="pixel-btn" onClick={() => handleAction('ACCEPT', r.id)}>ACEPT</button>
-                                <button className="pixel-btn" onClick={() => handleAction('REJECT', r.id)}>DENY</button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+            {/* Tabs */}
+            <div className={styles.tabs}>
+                <button className={`pixel-btn ${tab === 'FRIENDS' ? styles.activeTab : ''}`} onClick={() => setTab('FRIENDS')}>
+                    FRIENDS ({data.friends.length})
+                </button>
+                <button className={`pixel-btn ${tab === 'REQUESTS' ? styles.activeTab : ''}`} onClick={() => setTab('REQUESTS')}>
+                    REQUESTS ({data.incoming.length + data.outgoing.length})
+                </button>
+                <button className={`pixel-btn ${tab === 'BLOCKED' ? styles.activeTab : ''}`} onClick={() => setTab('BLOCKED')}>
+                    BLOCKED
+                </button>
+            </div>
 
-                <div className={`pixel-border ${styles.column}`}>
-                    <h2>ESTABLISHED_LINKS ({friends.length})</h2>
-                    {friends.length === 0 && <p style={{ color: '#666' }}>ISOLATED_NODE</p>}
-                    {friends.map(f => (
-                        <div key={f.id} className={styles.card}>
-                            <span className={styles.friendName}>{f.friendName}</span>
-                            <div className={styles.actions}>
-                                <Link href={`/play/dm/${f.id}`} className="pixel-btn" style={{ background: 'var(--primary)', color: 'black' }}>MSG</Link>
-                                <button className="pixel-btn" onClick={() => handleAction('BLOCK', f.id)} style={{ color: 'red' }}>BLK</button>
+            {/* Content */}
+            <div className={styles.content}>
+                {tab === 'FRIENDS' && (
+                    <div className={styles.grid}>
+                        {data.friends.length === 0 && <p className={styles.empty}>NO_ACTIVE_LINKS</p>}
+                        {data.friends.map(f => (
+                            <div key={f.id} className={`pixel-border ${styles.card}`}>
+                                <span className={styles.name}>{f.username}</span>
+                                <div className={styles.actions}>
+                                    <Link href={`/dm/${f.userId}`} className="pixel-btn" style={{ fontSize: '0.7rem' }}>MSG</Link>
+                                    <button onClick={() => handleBlock(f.userId)} className={styles.textBtn}>BLOCK</button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
 
-                <div className={`pixel-border ${styles.column}`}>
-                    <h2>PENDING_OUT ({sent.length})</h2>
-                    {sent.length === 0 && <p style={{ color: '#666' }}>NONE</p>}
-                    {sent.map(s => (
-                        <div key={s.id} className={styles.card}>
-                            <span>{s.friendName}</span>
-                            <span style={{ fontSize: '0.7rem', color: '#888' }}>AWAITING_ACK...</span>
-                        </div>
-                    ))}
-                </div>
+                {tab === 'REQUESTS' && (
+                    <div className={styles.list}>
+                        {data.incoming.length > 0 && <h4>INCOMING</h4>}
+                        {data.incoming.map(req => (
+                            <div key={req.id} className={`pixel-border ${styles.row}`}>
+                                <span>{req.username}</span>
+                                <div className={styles.actions}>
+                                    <button onClick={() => handleRespond(req.id, 'ACCEPT')} className="pixel-btn" style={{ color: 'lime' }}>ACCEPT</button>
+                                    <button onClick={() => handleRespond(req.id, 'REJECT')} className="pixel-btn" style={{ color: 'red' }}>REJECT</button>
+                                </div>
+                            </div>
+                        ))}
+
+                        {data.outgoing.length > 0 && <h4>OUTGOING</h4>}
+                        {data.outgoing.map(req => (
+                            <div key={req.id} className={`pixel-border ${styles.row}`} style={{ opacity: 0.7 }}>
+                                <span>{req.username}</span>
+                                <span style={{ fontSize: '0.8rem' }}>PENDING...</span>
+                            </div>
+                        ))}
+
+                        {data.incoming.length === 0 && data.outgoing.length === 0 && <p className={styles.empty}>NO_PENDING_REQUESTS</p>}
+                    </div>
+                )}
+
+                {tab === 'BLOCKED' && (
+                    <div className={styles.list}>
+                        {data.blocked.map(b => (
+                            <div key={b.id} className={`pixel-border ${styles.row}`}>
+                                <span style={{ color: 'red' }}>{b.username}</span>
+                                <span>BLOCKED</span>
+                            </div>
+                        ))}
+                        {data.blocked.length === 0 && <p className={styles.empty}>NO_BLOCKED_USERS</p>}
+                    </div>
+                )}
             </div>
         </div>
     );

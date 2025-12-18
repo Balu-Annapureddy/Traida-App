@@ -1,6 +1,7 @@
 import { getSession } from "@/lib/auth";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import NotificationBell from "./components/NotificationBell";
 
 // Helper to get challenges
 function getDailyChallenges() {
@@ -56,6 +57,9 @@ export default async function Home() {
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
               <Link href="/amigos" className="pixel-btn" style={{ fontSize: '0.8rem', padding: '5px 10px' }}>AMIGOS</Link>
               <Link href="/shop" className="pixel-btn" style={{ fontSize: '0.8rem', padding: '5px 10px', color: 'gold' }}>MARKET</Link>
+              <Link href="/clubs" className="pixel-btn" style={{ fontSize: '0.8rem', padding: '5px 10px' }}>CLUBS</Link>
+              <Link href="/insights" className="pixel-btn" style={{ fontSize: '0.8rem', padding: '5px 10px', color: 'cyan' }}>INSIGHTS</Link>
+              <NotificationBell />
               <Link href="/profile" className="pixel-border" style={{ padding: '5px 10px', fontSize: '0.8rem', cursor: 'pointer', color: 'inherit' }}>
                 USER: {session.user.username}
               </Link>

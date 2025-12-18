@@ -1,82 +1,75 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSession } from '@/lib/auth';
-import { checkRateLimit } from '@/lib/rate-limit';
-import { scrubText } from '@/lib/moderation';
+import { SocialUtils } from '@/lib/social';
 
-// GET /api/dm/[amigo_id]/messages
-export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
-    const params = await props.params;
+// GET Messages
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const amigoId = parseInt(params.id);
-
-    // Verify Access: Is user part of this Amigo tuple?
-    const amigo = db.prepare('SELECT user_id_1, user_id_2, status FROM amigos WHERE id = ?').get(amigoId) as any;
-    if (!amigo) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
-
-    if (amigo.user_id_1 !== session.user.id && amigo.user_id_2 !== session.user.id) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    if (amigo.status !== 'ACCEPTED') {
-        return NextResponse.json({ messages: [], status: amigo.status }); // Can't chat if not accepted
-    }
-
-    // Fetch messages where room_id = amigoId AND room_type = 'DM'
-    const messages = db.prepare(`
-    SELECT m.id, m.content, m.timestamp, u.username 
-    FROM messages m
-    JOIN users u ON m.user_id = u.id
-    WHERE m.room_id = ? AND m.room_type = 'DM'
-    ORDER BY m.timestamp DESC
-    LIMIT 50
-    `).all(amigoId);
-
-    return NextResponse.json({ messages: messages.reverse(), status: 'ACTIVE' });
-}
-
-// POST /api/dm/[amigo_id]/messages
-export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
-    const params = await props.params;
-    const session = await getSession();
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const amigoId = parseInt(params.id);
-    const { content } = await req.json();
-
-    if (!content || !content.trim()) return NextResponse.json({ error: 'Empty' }, { status: 400 });
-
-    // Rate Limit (reuse chat limit)
-    if (!checkRateLimit('CHAT', session.user.id.toString())) {
-        return NextResponse.json({ error: 'RATE_LIMIT_EXCEEDED' }, { status: 429 });
-    }
+    const roomId = params.id;
 
     // Verify Access
-    const amigo = db.prepare('SELECT user_id_1, user_id_2, status FROM amigos WHERE id = ?').get(amigoId) as any;
-    if (!amigo || (amigo.user_id_1 !== session.user.id && amigo.user_id_2 !== session.user.id)) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    // Room users are user_id_1 and user_id_2.
+    const room = db.prepare('SELECT user_id_1, user_id_2 FROM dm_rooms WHERE id = ?').get(roomId) as any;
+    if (!room) return NextResponse.json({ error: 'ROOM_NOT_FOUND' }, { status: 404 });
+
+    if (room.user_id_1 !== session.user.id && room.user_id_2 !== session.user.id) {
+        return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 });
     }
 
-    if (amigo.status !== 'ACCEPTED') {
-        return NextResponse.json({ error: 'RELATIONSHIP_NOT_ACTIVE' }, { status: 400 });
+    const messages = db.prepare(`
+        SELECT m.id, m.content, m.timestamp, m.sender_id, u.username
+        FROM dm_messages m
+        JOIN users u ON m.sender_id = u.id
+        WHERE m.room_id = ?
+        ORDER BY m.timestamp ASC
+        LIMIT 50
+    `).all(roomId);
+
+    return NextResponse.json({ messages });
+}
+
+// POST Message
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const roomId = params.id;
+    const { content } = await req.json();
+
+    if (!content || !content.trim()) return NextResponse.json({ error: 'EMPTY_MSG' }, { status: 400 });
+
+    const room = db.prepare('SELECT user_id_1, user_id_2 FROM dm_rooms WHERE id = ?').get(roomId) as any;
+    if (!room) return NextResponse.json({ error: 'ROOM_NOT_FOUND' }, { status: 404 });
+
+    if (room.user_id_1 !== session.user.id && room.user_id_2 !== session.user.id) {
+        return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 });
     }
 
-    // Check User Status (Ban/Mute)
-    const user = db.prepare('SELECT status FROM users WHERE id = ?').get(session.user.id) as any;
-    if (user && (user.status === 'BANNED' || user.status === 'MUTED')) {
-        return NextResponse.json({ error: 'TRANSMISSION_BLOCKED' }, { status: 403 });
+    // Check BLOCK status just in case (Hardening)
+    const otherId = (room.user_id_1 === session.user.id) ? room.user_id_2 : room.user_id_1;
+    const rel = SocialUtils.getRelationshipStatus(session.user.id, otherId);
+    if (!rel || rel.status === 'BLOCKED') {
+        return NextResponse.json({ error: 'CANNOT_SEND_BLOCKED' }, { status: 403 });
     }
 
-    // Profanity Filter
-    const cleanContent = scrubText(content.trim().substring(0, 500));
+    try {
+        db.transaction(() => {
+            // Insert Msg
+            db.prepare('INSERT INTO dm_messages (room_id, sender_id, content) VALUES (?, ?, ?)').run(roomId, session.user.id, content.trim());
 
-    // Insert Message (room_type = 'DM')
-    db.prepare(`
-        INSERT INTO messages (room_id, user_id, content, room_type) 
-        VALUES (?, ?, ?, 'DM')
-    `).run(amigoId, session.user.id, cleanContent);
+            // Update Room Activity
+            db.prepare('UPDATE dm_rooms SET last_activity_at = CURRENT_TIMESTAMP WHERE id = ?').run(roomId);
 
-    return NextResponse.json({ success: true });
+            // Notify Recipient
+            SocialUtils.sendNotification(otherId, 'DM', session.user.id, `New message from ${session.user.username}`);
+        })();
+
+        return NextResponse.json({ success: true });
+    } catch (e) {
+        console.error(e);
+        return NextResponse.json({ error: 'SEND_FAILED' }, { status: 500 });
+    }
 }
