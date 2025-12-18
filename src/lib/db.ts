@@ -32,11 +32,28 @@ export function initDB() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
-    -- ... challenges ...
+    CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        room_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        room_type TEXT DEFAULT 'CHALLENGE', -- NEW Phase 2B
+        FOREIGN KEY(room_id) REFERENCES challenges(id),
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    );
 
-    -- ... attempts ...
-
-    -- ... messages ...
+    CREATE TABLE IF NOT EXISTS amigos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id_1 INTEGER NOT NULL,
+        user_id_2 INTEGER NOT NULL,
+        status TEXT DEFAULT 'PENDING',
+        action_user_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id_1) REFERENCES users(id),
+        FOREIGN KEY(user_id_2) REFERENCES users(id),
+        UNIQUE(user_id_1, user_id_2)
+    );
 
     CREATE TABLE IF NOT EXISTS reports (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,6 +76,27 @@ export function initDB() {
       details TEXT,
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(admin_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS transactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      type TEXT NOT NULL,
+      amount INTEGER NOT NULL,
+      currency TEXT DEFAULT 'COIN',
+      description TEXT,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS inventory (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      item_id TEXT NOT NULL,
+      item_type TEXT NOT NULL,
+      rarity TEXT DEFAULT 'COMMON',
+      acquired_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(user_id) REFERENCES users(id)
     );
   `;
 
