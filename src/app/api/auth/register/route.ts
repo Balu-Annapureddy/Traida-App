@@ -1,40 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { hashPassword, createSession } from '@/lib/auth';
+import { hashPassword } from '@/lib/auth'; // Removed createSession
+import { OTPUtils } from '@/lib/otp';
+import { EmailService } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
     try {
         const { username, password, email } = await req.json();
 
-        if (!username || !password) {
-            return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
+        if (!username || !password || !email) {
+            return NextResponse.json({ error: 'Username, password, and email required' }, { status: 400 });
         }
 
         // Check existing user
-        const checkStmt = db.prepare('SELECT id FROM users WHERE username = ?');
-        const existing = checkStmt.get(username);
+        const checkStmt = db.prepare('SELECT id FROM users WHERE username = ? OR email = ?');
+        const existing = checkStmt.get(username, email);
         if (existing) {
-            return NextResponse.json({ error: 'Username already taken' }, { status: 409 });
+            return NextResponse.json({ error: 'Username or Email already taken' }, { status: 409 });
         }
 
         const hashedPassword = await hashPassword(password);
+        const otp = OTPUtils.generate();
+        const expiry = OTPUtils.getExpiry().toISOString();
 
         // Insert new user
         const insertStmt = db.prepare(`
-      INSERT INTO users (username, password_hash, email, coins, sp_coins)
-      VALUES (?, ?, ?, 150, 3)
+      INSERT INTO users (username, password_hash, email, otp_secret, otp_expires_at, verified_at, coins, sp_coins)
+      VALUES (?, ?, ?, ?, ?, NULL, 150, 3)
     `);
 
-        // Using transaction for safety (optional for single insert but good practice)
-        const info = insertStmt.run(username, hashedPassword, email || null);
+        insertStmt.run(username, hashedPassword, email, otp, expiry);
 
-        // Create session
-        await createSession({
-            id: info.lastInsertRowid as number,
-            username,
-        });
+        // Send OTP
+        await EmailService.sendOTP(email, otp);
 
-        return NextResponse.json({ success: true, userId: info.lastInsertRowid });
+        // Do NOT create session. User must verify.
+        return NextResponse.json({ success: true, requireVerification: true, email });
 
     } catch (error) {
         console.error('Registration error:', error);

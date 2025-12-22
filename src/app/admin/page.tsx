@@ -8,7 +8,7 @@ export default async function AdminPage() {
     if (!session) redirect('/login');
 
     // 1. Gate Access
-    const user = db.prepare('SELECT role FROM users WHERE id = ?').get(session.user.id) as any;
+    const user = db.prepare('SELECT role FROM users WHERE id = ?').get(session.id) as any;
     if (user.role !== 'ADMIN') {
         return (
             <div className="container" style={{ textAlign: 'center', marginTop: '5rem', color: 'red' }}>
@@ -36,12 +36,11 @@ export default async function AdminPage() {
         WHERE r.status = 'PENDING'
     `).all();
 
-    // 4. Fetch Audit Log
     const logs = db.prepare(`
-        SELECT l.action, l.details, l.timestamp, u.username as admin
-        FROM audit_logs l
+        SELECT l.action, l.details_json as details, l.created_at as timestamp, u.username as admin
+        FROM admin_logs l
         JOIN users u ON l.admin_id = u.id
-        ORDER BY l.timestamp DESC
+        ORDER BY timestamp DESC
         LIMIT 20
     `).all();
 

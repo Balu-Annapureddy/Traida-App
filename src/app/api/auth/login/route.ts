@@ -35,10 +35,15 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'ACCOUNT_SUSPENDED' }, { status: 403 });
         }
 
+        if (!user.verified_at) {
+            return NextResponse.json({ error: 'VERIFICATION_REQUIRED' }, { status: 403 });
+        }
+
         // Create session
         await createSession({
             id: user.id,
             username: user.username,
+            role: user.role,
             archetype_id: user.archetype_id
         });
 

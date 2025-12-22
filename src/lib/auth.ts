@@ -36,9 +36,10 @@ export async function comparePassword(password: string, hash: string) {
     return await bcrypt.compare(password, hash);
 }
 
-export async function createSession(user: { id: number; username: string; archetype_id?: string }) {
+// Update type definition implicitly by usage
+export async function createSession(user: { id: number; username: string; role: string; archetype_id?: string }) {
     const expires = new Date(Date.now() + SESSION_DURATION);
-    const session = await encrypt({ user, expires });
+    const session = await encrypt({ user, expires }); // Encrypts the whole user object including role
 
     const cookieStore = await cookies();
     cookieStore.set('session', session, {
@@ -55,7 +56,13 @@ export async function getSession() {
     const cookieStore = await cookies();
     const session = cookieStore.get('session')?.value;
     if (!session) return null;
-    return await decrypt(session);
+    const decrypted = await decrypt(session);
+    // Return flat structure or nested? Decrypt returns { user: {...}, expires }
+    // Let's normalize return to verify structure
+    if (decrypted && decrypted.user) {
+        return decrypted.user; // Return user object directly for easier access: session.role
+    }
+    return null;
 }
 
 export async function updateSession(request: NextRequest) {

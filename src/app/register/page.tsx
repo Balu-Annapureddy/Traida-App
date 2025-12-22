@@ -36,54 +36,53 @@ export default function RegisterPage() {
     return (
         <div className={styles.container}>
             <div className={`pixel-border ${styles.card}`}>
-                <h1 className={styles.title}>NEW_IDENTITY_PROTOCOL</h1>
+                <h1 className={styles.title} style={{ color: 'var(--foreground)', fontSize: '1.2rem', fontWeight: 500, letterSpacing: '0.05em' }}>
+                    New Identity
+                </h1>
 
-                {error && <div className={styles.error}>ERROR: {error}</div>}
+                {error && <div className={styles.error} style={{ color: 'var(--error)', border: '1px solid var(--error)' }}>{error}</div>}
 
                 <form onSubmit={handleSubmit} className={styles.form}>
                     <div className={styles.field}>
-                        <label>IDENTIFIER *</label>
+                        <label style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--secondary)' }}>Username</label>
                         <input
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className={styles.input}
-                            placeholder="USERNAME"
+                            className="pixel-input"
                             required
                         />
                     </div>
 
                     <div className={styles.field}>
-                        <label>PASSCODE *</label>
+                        <label style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--secondary)' }}>Password</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className={styles.input}
-                            placeholder="********"
+                            className="pixel-input"
                             required
                         />
                     </div>
 
                     <div className={styles.field}>
-                        <label>COMM_LINK (OPTIONAL)</label>
+                        <label style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--secondary)' }}>Email</label>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className={styles.input}
-                            placeholder="EMAIL"
+                            className="pixel-input"
+                            required
                         />
                     </div>
 
-                    <button type="submit" className="pixel-btn">
-                        GENERATE_IDENTITY
+                    <button type="submit" className="pixel-btn" style={{ marginTop: '1rem', width: '100%' }}>
+                        Create
                     </button>
                 </form>
 
                 <div className={styles.footer}>
-                    <span>ALREADY_EXIST? </span>
-                    <a href="/login">ACCESS_TERMINAL</a>
+                    <a href="/login" style={{ fontSize: '0.8rem', color: 'var(--secondary)' }}>Return to Entrance</a>
                 </div>
             </div>
         </div>

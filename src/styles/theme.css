@@ -1,0 +1,66 @@
+:root {
+    /* COLORS: Dark Console Palette */
+    --bg-app: #050505;
+    --bg-card: #0A0A0A;
+    --bg-hover: #111111;
+
+    --border-muted: #222222;
+    --border-active: #444444;
+    --border-focus: #888888;
+
+    --text-primary: #E0E0E0;
+    --text-secondary: #888888;
+    --text-muted: #444444;
+
+    /* Accents - Calm Neon */
+    --accent-primary: #00FF9D;
+    /* Terminal Green */
+    --accent-error: #FF3333;
+    /* Error Red */
+    --accent-warn: #FFCC00;
+    /* Amber */
+    --accent-info: #0088FF;
+    /* Tech Blue */
+
+    /* TYPOGRAPHY */
+    --font-mono: 'Courier New', Courier, monospace;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    /* SPACING */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+
+    /* BORDERS */
+    --radius-sm: 2px;
+    /* Hard edges */
+    --radius-md: 4px;
+
+    /* SHADOWS (Subtle) */
+    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+body {
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.mono {
+    font-family: var(--font-mono);
+    letter-spacing: -0.02em;
+}
+
+/* UTILITIES */
+.calm-border {
+    border: 1px solid var(--border-muted);
+}

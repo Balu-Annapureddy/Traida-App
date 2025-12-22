@@ -33,43 +33,42 @@ export default function LoginPage() {
     return (
         <div className={styles.container}>
             <div className={`pixel-border ${styles.card}`}>
-                <h1 className={styles.title}>ACCESS_TERMINAL</h1>
+                <h1 className={styles.title} style={{ color: 'var(--foreground)', fontSize: '1.2rem', fontWeight: 500, letterSpacing: '0.05em' }}>
+                    TRAIDA
+                </h1>
 
-                {error && <div className={styles.error}>ERROR: {error}</div>}
+                {error && <div className={styles.error} style={{ color: 'var(--error)', border: '1px solid var(--error)' }}>{error}</div>}
 
                 <form onSubmit={handleSubmit} className={styles.form}>
                     <div className={styles.field}>
-                        <label>IDENTIFIER</label>
+                        <label style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--secondary)' }}>Identifier</label>
                         <input
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className={styles.input}
-                            placeholder="USERNAME"
+                            className="pixel-input"
                             required
                         />
                     </div>
 
                     <div className={styles.field}>
-                        <label>PASSCODE</label>
+                        <label style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--secondary)' }}>Passcode</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className={styles.input}
-                            placeholder="********"
+                            className="pixel-input"
                             required
                         />
                     </div>
 
-                    <button type="submit" className="pixel-btn">
-                        INITIALIZE_SESSION
+                    <button type="submit" className="pixel-btn" style={{ marginTop: '1rem', width: '100%' }}>
+                        Begin
                     </button>
                 </form>
 
                 <div className={styles.footer}>
-                    <span>NEW_ENTITY? </span>
-                    <a href="/register">ESTABLISH_IDENTITY</a>
+                    <a href="/register" style={{ fontSize: '0.8rem', color: 'var(--secondary)' }}>Create Identity</a>
                 </div>
             </div>
         </div>
